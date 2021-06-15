@@ -39,7 +39,9 @@ void Macro::addKey(int row, int col, bool press) {
     int offset = 0;
     while(offset < max_keys) {
         if(!getKey(offset)) {
-            if(value == 0 or value == -63 or value == -2) return;
+            if(value == 0 or value == -63 or value == -2 or value == KEY_ESC) {
+                return;
+            }
             EEPROM.write(offset + starting_key, (uint8_t)value);
             doKey(offset);
             return;
