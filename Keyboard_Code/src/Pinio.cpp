@@ -1,13 +1,33 @@
 #include "Pinio.h"
 #include "Arduino.h"
 
-void KeyboardHandler::switchRows(int row) {
-  for(int i = 0; i < NUMROWS; i++) {
-    if(i == row) digitalWrite(rowToPin(row), HIGH);
-    else digitalWrite(rowToPin(row), LOW);
-  } 
+// Class constructor. Sets up the pins, macros, and LED's
+KeyboardHandler::KeyboardHandler() {
+  setup();
+  makeMacros();
+  pinMode(led::r, OUTPUT);
+  pinMode(led::g, OUTPUT);
+  pinMode(led::b, OUTPUT);
 }
 
+// Setup helper function, defaults values, and sets up pin modes for keys
+void KeyboardHandler::setup() {
+  fnPressed = false;
+  numPressed = false;
+  recordMode = false;
+  for(int row = 0; row <= NUMROWS; row++) pinMode(rowToPin(row), OUTPUT);
+  for(int col = 0; col <= NUMCOLS; col++) {
+    *portConfigRegister(col) = PORT_PCR_MUX(1) | PORT_PCR_PE;
+  }
+  for(int col = 0; col < NUMCOLS; col++) {
+    for(int row = 0; row < NUMROWS; row++) {
+      keyboard[col][row].setup(row, col);
+    }
+  }
+}
+
+// Scans all rows and columns and performs the apropriate action if a key is 
+// pressed
 void KeyboardHandler::scanKeys() {
   int newKey;
   for(int row = 0; row < NUMROWS; row++) {
@@ -31,6 +51,7 @@ void KeyboardHandler::scanKeys() {
   }
 }
 
+// Updates Fn/Num/Shift and updates the LED controls 
 void KeyboardHandler::updateModifiers() {
   if(!recordMode) {
     if(keyboard[1][0].turnedOn()) fnPressed = !fnPressed;
@@ -45,14 +66,7 @@ void KeyboardHandler::updateModifiers() {
   }
 }
 
-KeyboardHandler::KeyboardHandler() {
-  setup();
-  makeMacros();
-  pinMode(led::r, OUTPUT);
-  pinMode(led::g, OUTPUT);
-  pinMode(led::b, OUTPUT);
-}
-
+// Constructs macro class instances
 void KeyboardHandler::makeMacros() {
   int size = KEYSSTORED/NUMMACROS;
   for(int i = 0; i < NUMMACROS; i++) {
@@ -60,33 +74,21 @@ void KeyboardHandler::makeMacros() {
   }
 }
 
-void KeyboardHandler::setup() {
-  fnPressed = false;
-  numPressed = false;
-  recordMode = false;
-  for(int row = 0; row <= NUMROWS; row++) pinMode(rowToPin(row), OUTPUT);
-  for(int col = 0; col <= NUMCOLS; col++) {
-    *portConfigRegister(col) = PORT_PCR_MUX(1) | PORT_PCR_PE;
-  }
-  for(int col = 0; col < NUMCOLS; col++) {
-    for(int row = 0; row < NUMROWS; row++) {
-      keyboard[col][row].setup(row, col);
-    }
-  }
-}
-
+// Update Wrapper Function
 void KeyboardHandler::update() {
   updateLEDs();
   scanKeys();
   updateModifiers();
 }
 
+// Updates the values of status LED's
 void KeyboardHandler::updateLEDs() {
   digitalWrite(led::r, recordMode);
   digitalWrite(led::g, fnPressed);
   digitalWrite(led::b, numPressed);
 }
 
+// Executes a keypress.
 void KeyboardHandler::doKey(int code) {
     bool keyup;
     if(code > 127) {

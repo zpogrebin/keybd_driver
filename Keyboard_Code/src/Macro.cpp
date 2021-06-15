@@ -2,12 +2,14 @@
 #include "Pinio.h"
 #include "Keyboard.h"
 
+// Constructor function -- sets memory location and parameters
 Macro::Macro(int starting_key, int max_keys, KeyboardHandler *keyboard) {
     this->keyboard = keyboard;
     this->starting_key = starting_key;
     this->max_keys = max_keys;
 }
 
+// Default Constructor
 Macro::Macro() {
     this->starting_key = 0;
     this->max_keys = 0;
