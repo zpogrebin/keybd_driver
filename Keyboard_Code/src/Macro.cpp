@@ -2,6 +2,12 @@
 #include "Pinio.h"
 #include "Keyboard.h"
 
+////////// Key Encoding method: ////////// 
+// Macro codes: (uint8) = col + (number of columns * row)
+// If the key is a release, take the two's complement of macrovalue (negative)
+// Note: Macros cannot contain the escape key (yeah yeah it's a limitation)
+//////////////////////////////////////////
+
 // Constructor function -- sets memory location and parameters
 Macro::Macro(int starting_key, int max_keys, KeyboardHandler *keyboard) {
     this->keyboard = keyboard;
@@ -15,6 +21,7 @@ Macro::Macro() {
     this->max_keys = 0;
 }
 
+// Executes the macro
 void Macro::doMacro() {
     int offset = 0;
     while(offset < max_keys) {
@@ -24,6 +31,8 @@ void Macro::doMacro() {
     }
 }
 
+// Execute a key in the macro
+// Returns true if the key is a '\0' character
 bool Macro::doKey(int offset) {
     int value = EEPROM.read(starting_key + offset);
     if(!value) return true;
@@ -31,10 +40,12 @@ bool Macro::doKey(int offset) {
     return false;
 }
 
+// Resets the macro
 void Macro::clear() {
     for(int i = 0; i < max_keys * 2; i++) EEPROM.write(starting_key + i, 0);
 }
 
+// Adds a key to the end of the macro, encodign it 
 void Macro::addKey(int row, int col, bool press) {
     int value = col + NUMCOLS * row;
     if(press) value = -value;
@@ -52,6 +63,7 @@ void Macro::addKey(int row, int col, bool press) {
     }
 }
 
+// Gets the stored value for a specific key.
 int Macro::getKey(int offset) {
     if(offset >= max_keys) return 0;
     return EEPROM.read(starting_key+offset);

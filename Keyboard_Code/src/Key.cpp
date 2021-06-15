@@ -1,5 +1,7 @@
 #include "Key.h"
 
+// Class constructor. Takes the ascii codes for pressing under the four cases.
+// Nothing, Fn pressed, Num pressed, Num+Fn pressed.
 Key::Key(int code, int code_fn, int code_num, int code_num_fun) {
   this->code = code;
   this->code_fn = code_fn;
@@ -10,6 +12,7 @@ Key::Key(int code, int code_fn, int code_num, int code_num_fun) {
   this->state = false;
 }
 
+// Class Constructor. Takes the ascii code for pressing.
 Key::Key(int code) {
   this->code = code;
   this->code_fn = code;
@@ -20,6 +23,7 @@ Key::Key(int code) {
   this->state = false;
 }
 
+// Class Constructor. Same as the #1 but also accepts row and column
 Key::Key(int code, int code_fn, int code_num, int code_num_fun, int row, int col) {
   this->code = code;
   this->code_fn = code_fn;
@@ -30,6 +34,7 @@ Key::Key(int code, int code_fn, int code_num, int code_num_fun, int row, int col
   this->state = false;
 }
 
+// Class Constructor. Same as the #2 but also accepts row and column
 Key::Key(int code, int row, int col) {
   this->code = code;
   this->code_fn = code;
@@ -40,6 +45,9 @@ Key::Key(int code, int row, int col) {
   this->state = false;
 }
 
+// Update function. Checks the state of the key and updates it. Accepts the 
+// State of the modifier keys and whether the system is recording a macro.
+// Returns the key code (and also does the key press if necessary)
 int Key::update(bool fn_pressed, bool num_pressed, bool recording) {
   prev_state = state;
   state = digitalRead(col);
@@ -51,6 +59,9 @@ int Key::update(bool fn_pressed, bool num_pressed, bool recording) {
   }
 }
 
+// Executes the key press by sending the appropriate HID Code. Accepts the 
+// State of the modifier keys and whether the system is recording a macro.
+// Returns the key code.
 int Key::doKey(bool fn_pressed, bool num_pressed, bool keyup) {
   int key;
   if(!fn_pressed and !num_pressed) key = code;
@@ -65,11 +76,14 @@ int Key::doKey(bool fn_pressed, bool num_pressed, bool keyup) {
   return 0;
 }
 
+// Setup function for use with #1 and #2 constructor. Sets the "location" of the
+// key.
 void Key::setup(int row, int col) {
   this->row = row;
   this->col = col;
 }
 
+// Debugging print function. Does not work when in HID mode.
 void Key::writeInfo() {
   //Serial.print(code);
   Serial.print("COL | ROW: ");
