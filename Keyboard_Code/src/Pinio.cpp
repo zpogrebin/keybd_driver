@@ -17,7 +17,7 @@ void KeyboardHandler::setup() {
   recordMode = false;
   for(int row = 0; row <= NUMROWS; row++) pinMode(rowToPin(row), OUTPUT);
   for(int col = 0; col <= NUMCOLS; col++) {
-    *portConfigRegister(col) = PORT_PCR_MUX(1) | PORT_PCR_PE;
+    *portConfigRegister(col) = PORT_PCR_MUX(1) | PORT_PCR_PE; // Set pull down
   }
   for(int col = 0; col < NUMCOLS; col++) {
     for(int row = 0; row < NUMROWS; row++) {
@@ -34,6 +34,7 @@ void KeyboardHandler::scanKeys() {
     for(int i = 0; i < NUMROWS; i++) {
       if(i != row) digitalWrite(rowToPin(i), LOW);
       else digitalWrite(rowToPin(row), HIGH);
+      delay(1); //Needed because GPAIO seems to be slow
     }
     for(int col = 0; col < NUMCOLS; col++) {
       bool trueRecording = recordMode and recording >= 0;
@@ -55,6 +56,7 @@ void KeyboardHandler::scanKeys() {
 void KeyboardHandler::updateModifiers() {
   if(!recordMode) {
     if(keyboard[1][0].turnedOn()) fnPressed = !fnPressed;
+    if(keyboard[1][0].turnedOn()) this->dumpKeys(); //Debug (remove)
     if(keyboard[0][0].turnedOn()) numPressed = !numPressed;
   } else if(keyboard[2][0].turnedOn()) recordMode = false;
   shiftPressed = keyboard[3][3].isPressed() or keyboard[16][3].isPressed();
@@ -98,4 +100,18 @@ void KeyboardHandler::doKey(int code) {
     int row = code / NUMCOLS;
     int col = code % NUMCOLS;
     keyboard[col][row].doKey(keyup);
+}
+
+// Debug function to dump all keys being pressed
+void KeyboardHandler::dumpKeys() {
+  for(int row = 0; row < NUMROWS; row++) {
+    Keyboard.print("\nRow ");
+    Keyboard.print(row);
+    Keyboard.print("\t");
+    for(int col = 0; col < NUMCOLS; col++) {
+      if(keyboard[col][row].isPressed()) Keyboard.print("x");
+      else Keyboard.print("_");
+    }
+  }
+  Keyboard.print("\n\n");
 }

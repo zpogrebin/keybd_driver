@@ -142,6 +142,7 @@ class KeyboardHandler {
     void updateModifiers();
     void setup();
     void updateLEDs();
+    void dumpKeys();
 };
 
 #endif
